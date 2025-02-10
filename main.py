@@ -64,6 +64,11 @@ class SettingsWindow(tk.Tk):
         self.base_col_entry.insert(0, str(parent.plot_settings["base_col"]))
         self.base_col_entry.pack()
 
+        tk.Label(self, text="Mehrfach-Plots (z. B. 1,2,3):").pack()
+        self.multi_plot_entry = tk.Entry(self)
+        self.multi_plot_entry.insert(0, ",".join(map(str, parent.plot_settings["multi_plot"])))
+        self.multi_plot_entry.pack()
+
         tk.Button(self, text="Speichern", command=self.save_settings).pack()
 
     def save_settings(self):
@@ -77,6 +82,14 @@ class SettingsWindow(tk.Tk):
         self.parent.plot_settings["grid_y"] = str_bool(self.grid_y_entry.get())
         self.parent.plot_settings["grid_x"] = str_bool(self.grid_x_entry.get())
         self.parent.plot_settings["base_col"] = int(self.base_col_entry.get())
+        # Konvertiere Multi-Plot-String in Liste von Listen
+        multi_plot_input = self.multi_plot_entry.get()  # Dies könnte ein Textfeld für Gruppenwahl sein
+        # Hier nehmen wir an, dass die Eingabe durch Kommas getrennte Zahlen sind
+        if multi_plot_input:
+            multi_plot = [list(map(int, group.split(','))) for group in multi_plot_input.split(';')]
+            self.parent.plot_settings["multi_plot"] = multi_plot
+        else:
+            self.parent.plot_settings["multi_plot"] = []
         self.parent.load_data(reload=False)
         self.parent.plot_profile()
         self.destroy()
@@ -113,7 +126,8 @@ class PlotApp:
             "log_y": False,
             "grid_x": False,
             "grid_y":False,
-            "base_col":0
+            "base_col":0,
+            "multi_plot": []
         }
         self.load_data()
         self.init_plot()
@@ -136,6 +150,7 @@ class PlotApp:
         self.y_labels = [label for i, label in enumerate(headers) if i != self.plot_settings["base_col"]]
 
         self.num_profiles = self.y_values.shape[1]
+
     def init_plot(self):
         self.fig, self.ax = plt.subplots()
         plt.subplots_adjust(bottom=0.3)
@@ -146,18 +161,43 @@ class PlotApp:
 
     def plot_profile(self):
         self.ax.clear()
-        self.ax.plot(self.x, self.y_values[:, self.current_index], label=self.y_labels[self.current_index],
-                     color=self.plot_settings["color"], linestyle=self.plot_settings["linestyle"],
-                     linewidth=self.plot_settings["linewidth"], marker=self.plot_settings["marker"],
-                     markersize=self.plot_settings["markersize"],)
-        self.ax.set_ylabel(self.y_labels[self.current_index])
+
+        # Prüfen, ob `multi_plot`-Einstellung gesetzt wurde
+        multi_groups = self.plot_settings.get("multi_plot", [])
+
+        # Nur eine Gruppe von Profilen wird angezeigt, wenn `current_index` zu dieser Gruppe gehört
+        selected_profiles = None
+        for group in multi_groups:
+            if self.current_index in group:
+                selected_profiles = group
+                break
+
+        # Falls eine Gruppe existiert, plotte diese Profile zusammen
+        if selected_profiles:
+            for idx in selected_profiles:
+                self.ax.plot(self.x, self.y_values[:, idx], label=self.y_labels[idx],
+                             color=self.plot_settings["color"], linestyle=self.plot_settings["linestyle"],
+                             linewidth=self.plot_settings["linewidth"],
+                             marker=self.plot_settings["marker"],
+                             markersize=self.plot_settings["markersize"])
+            self.ax.set_title(", ".join([self.y_labels[idx] for idx in selected_profiles]))
+        else:
+            # Falls keine Gruppen eingestellt sind, plotte nur das aktuelle Profil
+            self.ax.plot(self.x, self.y_values[:, self.current_index], label=self.y_labels[self.current_index],
+                         color=self.plot_settings["color"], linestyle=self.plot_settings["linestyle"],
+                         linewidth=self.plot_settings["linewidth"],
+                         marker=self.plot_settings["marker"],
+                         markersize=self.plot_settings["markersize"])
+            self.ax.set_title(self.y_labels[self.current_index])
+
         self.ax.set_xlabel(self.x_label)
-        self.ax.set_title(self.y_labels[self.current_index], picker=True)
         self.ax.legend()
         self.ax.grid(self.plot_settings["grid_y"], axis='y')
         self.ax.grid(self.plot_settings["grid_x"], axis='x')
-        if self.plot_settings["log_x"] and np.any(self.x > 0):
-            self.x_min = min(self.x[self.x > 0])
+
+        # Log-Skalierung für X-Achse, falls gewünscht
+        if self.plot_settings["log_x"] and np.all(self.x > 0):  # Stellen sicher, dass X nur positive Werte enthält
+            self.x_min = min(self.x)
             self.x_max = max(self.x)
             self.ax.set_xscale("log")
             self.ax.set_xlim(left=self.x_min / 1.1, right=self.x_max * 1.1)
@@ -169,21 +209,28 @@ class PlotApp:
             self.ax.set_xlim(left=self.x_min, right=self.x_max)
             self.ax.set_xticks(np.linspace(self.x_min, self.x_max, 10))
 
-            # Y-Achse: Falls keine positiven Werte vorhanden sind, auf lineare Skalierung zurückfallen
-        self.positive_y_values = self.y_values[:, self.current_index][self.y_values[:, self.current_index] > 0]
-        self.y_min = min(self.positive_y_values) if self.plot_settings["log_y"] and len(self.positive_y_values) > 0 else min(
-            self.y_values[:, self.current_index])
-        self.y_max = max(self.y_values[:, self.current_index])
-        self.y_range = self.y_max - self.y_min
+        # Log-Skalierung für Y-Achse, falls gewünscht
+        # Wir müssen die Y-Werte aus allen ausgewählten Profilen kombinieren, um eine globale Skalierung zu finden
+        y_min, y_max = np.inf, -np.inf
+        for idx in selected_profiles or [self.current_index]:
+            y_values_for_profile = self.y_values[:, idx]
+            positive_y_values = y_values_for_profile[y_values_for_profile > 0]  # Nur positive Werte
+            if len(positive_y_values) > 0:
+                y_min = min(y_min, min(positive_y_values))
+                y_max = max(y_max, max(positive_y_values))
+            else:
+                y_min = min(y_min, min(y_values_for_profile))
+                y_max = max(y_max, max(y_values_for_profile))
+
+        self.y_range = y_max - y_min
         self.y_buffer = 0.1 * self.y_range if self.y_range > 0 else 1
 
-        if self.plot_settings["log_y"] and len(self.positive_y_values) > 0:
+        if self.plot_settings["log_y"] and y_min > 0:  # Sicherstellen, dass keine null- oder negativen Werte existieren
             self.ax.set_yscale("log")
-            self.ax.set_ylim(bottom=self.y_min / 1.1, top=self.y_max * 1.1)
+            self.ax.set_ylim(bottom=y_min / 1.1, top=y_max * 1.1)
         else:
-            self.ax.set_ylim(bottom=self.y_min - self.y_buffer, top=self.y_max + self.y_buffer)
-            self.ax.set_yticks(np.linspace(self.y_min, self.y_max, 10))
-
+            self.ax.set_ylim(bottom=y_min - self.y_buffer, top=y_max + self.y_buffer)
+            self.ax.set_yticks(np.linspace(y_min, y_max, 10))
 
         plt.draw()
 
@@ -196,9 +243,27 @@ class PlotApp:
                 self.plot_profile()
 
     def next_profile(self):
-        if self.current_index < self.num_profiles - 1:
-            self.current_index += 1
-            self.plot_profile()
+        multi_groups = self.plot_settings.get("multi_plot", [])
+
+        # Prüfen, ob der aktuelle Index Teil einer Gruppe ist
+        selected_group = None
+        for group in multi_groups:
+            if self.current_index in group:
+                selected_group = group
+                break
+
+        # Falls eine Gruppe existiert, gehe zum nächsten Index, aber überspringe alle Profil-Indizes der aktuellen Gruppe
+        if selected_group:
+            group_size = len(selected_group)
+            # Erhöhe den current_index um die Größe der Gruppe
+            if self.current_index + group_size < self.num_profiles:
+                self.current_index += group_size
+        else:
+            # Wenn keine Gruppe existiert, gehe einfach zum nächsten Profil
+            if self.current_index < self.num_profiles - 1:
+                self.current_index += 1
+
+        self.plot_profile()
 
     def prev_profile(self):
         if self.current_index > 0:
