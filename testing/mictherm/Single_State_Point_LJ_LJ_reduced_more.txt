@@ -1,0 +1,94 @@
+Results file Single_State_Point.txt created by MicTherm on the 18.03.2025 at 11:07:23 
+
+************************************************************************
+*                               MicTherm                               *
+************************************************************************
+
+
+************************************************************************
+*                      Publishing with MicTherm                        *
+* Every user agrees to cite MicTherm upon usage as follows             *
+* -------------------------------------------------------------------- *
+* REFERENCE                                                            *
+************************************************************************
+
+************************************************************************
+*                          Address: Simon Stephan                      *
+*                                   RPTU Kaiserslautern                *
+*                                   P.O. Box 67653                     *
+*                                   67653 Kaiserslautern, Germany      *
+************************************************************************
+
+Source code and updates available from
+  WEBSITE link
+
+calculations performed by     :  
+MicTherm version              : 1.0 (2020) 
+MATLAB version                : 24.2.0.2863752 (R2024b) Update 5 
+*************************************************************************
+*                           Simulation Details                          *
+*************************************************************************
+
+Path                          : /home/richy/Schreibtisch/MicTherm./MicTherm/trunk\Result_2025_03_18 
+Duration of calculation       : 13.2s or 0.00h 
+.par file used                : test.par 
+System of units               : reduced units 
+Calculation mode              : Single_State_Point 
+EOS model used                : PeTS 
+Number of components          : 2 
+State point specification     : spreadsheet file -> Statepoints.xlsx 
+
+used substances                
+Substance name 1              : LJ 
+.pm file                      : LJ.pm 
+Substance ID 1                : 0 
+Substance name 2              : LJ 
+.pm file                      : LJ.pm 
+Substance ID 2                : 0 
+
+.par file specifications:
+Units               = reduced 
+CalculationMode     = Single_State_Point 
+EOS                 = PeTS 
+N_Components        = 2 
+State_points        = Statepoints.xlsx 
+dx                  = 0.001000 
+PotModel_1          = LJ.pm 
+Substance_ID1       = 0 
+PotModel_2          = LJ.pm 
+Substance_ID2       = 0 
+Xsi_12              = 1 
+*************************************************************************
+*                          Substance Parameters                         *
+*************************************************************************
+
+# component 1 
+substance_name      = LJ 
+molar_mass          = 1.000000 
+ 
+substance_name      = LJ 
+molar_mass          = 1.000000 
+ 
+epsilon             = 2.000000 
+sigma               = 1.000000 
+chainlength         = 1.000000 
+
+# component 2 
+substance_name      = LJ 
+molar_mass          = 1.000000 
+ 
+substance_name      = LJ 
+molar_mass          = 1.000000 
+ 
+epsilon             = 2.000000 
+sigma               = 1.000000 
+chainlength         = 1.000000 
+
+*************************************************************************
+*                               Results                                 *
+*************************************************************************
+
+T* 	 rho* 	 p* 	 x_1 	 x_2 	 a_T* 	 p* 	 Z 	 u* 	 h* 	 s_res* 	 g* 	 cv* 	 cp* 	 dp*_dT* 	 dp*_drho* 	 w* 	 Grueneisen* 	 alpha* 	 beta* 	 gamma* 	 muJT* 	 B_vir* 	 C_vir* 	 a_T_00* 	 a_T_01* 	 a_T_02* 	 a_T_11* 	 a_T_10* 	 a_T_20* 	 mu_T_1 	 mu_T_2 	 mu_T_res_1 	 mu_T_res_2 	 phi_1 	 phi_2 
+- 	 - 	 - 	 mol mol^-1 	 mol mol^-1 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 	 - 
+8.8000000000e-01 	 7.2000000000e-01 	 -2.9092528800e+00 	 5.0000000000e-01 	 5.0000000000e-01 	 -1.0991250776e+01 	 -2.9092528800e+00 	 -4.5916238636e+00 	 -7.9401601138e+00 	 -1.1980789114e+01 	 -2.9890862650e+00 	 -1.5031879776e+01 	 2.0139897117e+00 	 -1.2812247055e+01 	 3.8249292757e+00 	 -1.6750723374e+00 	 3.2643807766e+00 	 2.6377502035e+00 	 -3.1714461836e+00 	 -8.2915158817e-01 	 3.8249292757e+00 	 4.1094281656e-01 	 -1.8556884682e+01 	 3.9514112165e+01 	 -7.5338229553e+00 	 -5.5916238636e+00 	 8.2797564346e+00 	 -9.9040256354e+00 	 -1.0522909220e+01 	 -5.1398971168e-01 	 -1.7081681563e+01 	 -1.7081681563e+01 	 -1.3125446819e+01 	 -1.3125446819e+01 	 -4.3423474443e-07 	 -4.3423474443e-07 
+1.5000000000e+00 	 5.0000000000e-01 	 -6.6242235904e-01 	 5.0000000000e-01 	 5.0000000000e-01 	 -1.3016903553e+01 	 -6.6242235904e-01 	 -8.8322981206e-01 	 -4.0920596567e+00 	 -5.4169043748e+00 	 -1.6709296465e+00 	 -1.4341748271e+01 	 2.1058015185e+00 	 -1.7011850594e+00 	 1.3770057834e+00 	 -2.9884186173e+00 	 1.5537737475e+00 	 1.3078210566e+00 	 -9.2156150777e-01 	 -6.6925028122e-01 	 1.3770057834e+00 	 2.8008031795e+00 	 -7.4180296893e+00 	 1.1000840590e+01 	 -2.5571101246e+00 	 -1.8832298121e+00 	 7.7418054594e-01 	 -3.6372413788e+00 	 -4.2280397711e+00 	 -6.0580151846e-01 	 -9.5611655143e+00 	 -9.5611655143e+00 	 -4.4403399367e+00 	 -4.4403399367e+00 	 -1.3350918603e-02 	 -1.3350918603e-02 

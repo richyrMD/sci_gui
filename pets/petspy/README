@@ -1,0 +1,9 @@
+# Make ppls1
+make
+
+# Either link
+ln -s ppls1/petspy/libpets.so /usr/local/lib/
+
+# or use lib variable (add to bash_rc)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/your/directory
+
