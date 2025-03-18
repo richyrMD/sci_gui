@@ -5,6 +5,7 @@ from matplotlib.widgets import Button
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 from static_functions import *
+import pandas as pd 
 matplotlib.use('TkAgg')
 
 class SettingsWindow(tk.Tk):
@@ -12,7 +13,7 @@ class SettingsWindow(tk.Tk):
         super().__init__()
         self.parent = parent
         self.title("Einstellungen")
-        self.geometry("300x400")
+        self.geometry("300x800")
 
         tk.Label(self, text="Farbe:").pack()
         self.color_entry = tk.Entry(self)
@@ -38,6 +39,11 @@ class SettingsWindow(tk.Tk):
         self.markersize_entry = tk.Entry(self)
         self.markersize_entry.insert(0, str(parent.plot_settings["markersize"]))
         self.markersize_entry.pack()
+
+        tk.Label(self, text="Markerfarbe:").pack()
+        self.markercolor_entry = tk.Entry(self)
+        self.markercolor_entry.insert(0, str(parent.plot_settings["markercolor"]))
+        self.markercolor_entry.pack()
 
         tk.Label(self, text="Logx:").pack()
         self.logx_entry = tk.Entry(self)
@@ -72,6 +78,7 @@ class SettingsWindow(tk.Tk):
         self.parent.plot_settings["linewidth"] = float(self.linewidth_entry.get())
         self.parent.plot_settings["marker"] = self.marker_entry.get()
         self.parent.plot_settings["markersize"] = int(self.markersize_entry.get())
+        self.parent.plot_settings["markercolor"] = self.markercolor_entry.get()
         self.parent.plot_settings["log_x"] = str_bool(self.logx_entry.get())
         self.parent.plot_settings["log_y"] = str_bool(self.logy_entry.get())
         self.parent.plot_settings["grid_y"] = str_bool(self.grid_y_entry.get())
@@ -109,6 +116,7 @@ class PlotApp:
             "linewidth": 1.5,
             "marker": "",
             "markersize": 5,
+            "markercolor":"blue",
             "log_x": False,
             "log_y": False,
             "grid_x": False,
@@ -118,24 +126,48 @@ class PlotApp:
         self.load_data()
         self.init_plot()
 
+
     def load_data(self, reload=False):
         if not hasattr(self, "file_path") or not self.file_path or reload:
             root = tk.Tk()
             root.withdraw()
-            self.file_path = filedialog.askopenfilename(filetypes=[("DAT files", "*.dat"), ("All files", "*.*")])
+            self.file_path = filedialog.askopenfilename(filetypes=[("DAT files", "*.dat"), ("CSV files", "*.csv"), ("All files", "*.*")])
 
-        with open(self.file_path, 'r') as f:
-            headers = f.readline().strip().split()
+        file_extension = self.file_path.split('.')[-1].lower()
+        
+        if file_extension == 'csv':
 
-        self.data = np.loadtxt(self.file_path, skiprows=1)
+            self.data = pd.read_csv(self.file_path)
 
-        self.x = self.data[:, self.plot_settings["base_col"]]
-        self.x_label = headers[self.plot_settings["base_col"]]
+            self.headers = self.data.columns.tolist()
 
-        self.y_values = np.delete(self.data, self.plot_settings["base_col"], axis=1)
-        self.y_labels = [label for i, label in enumerate(headers) if i != self.plot_settings["base_col"]]
+            self.x = self.data.iloc[:, self.plot_settings["base_col"]]
+            self.x_label = self.headers[self.plot_settings["base_col"]]
 
-        self.num_profiles = self.y_values.shape[1]
+            self.y_values = self.data.drop(columns=[self.x_label]).values
+            self.y_labels = [label for i, label in enumerate(self.headers) if i != self.plot_settings["base_col"]]
+
+            self.num_profiles = self.y_values.shape[1]
+
+        elif file_extension == 'dat':
+          
+            with open(self.file_path, 'r') as f:
+                headers = f.readline().strip().split()
+
+            self.data = np.loadtxt(self.file_path, skiprows=1)
+            print(self.data())
+            input()
+            self.x = self.data[:, self.plot_settings["base_col"]]
+            self.x_label = headers[self.plot_settings["base_col"]]
+
+            self.y_values = np.delete(self.data, self.plot_settings["base_col"], axis=1)
+            self.y_labels = [label for i, label in enumerate(headers) if i != self.plot_settings["base_col"]]
+
+            self.num_profiles = self.y_values.shape[1]
+
+        else:
+            raise ValueError(f"Unsupported file extension: {file_extension}")
+
     def init_plot(self):
         self.fig, self.ax = plt.subplots()
         plt.subplots_adjust(bottom=0.3)
@@ -149,7 +181,8 @@ class PlotApp:
         self.ax.plot(self.x, self.y_values[:, self.current_index], label=self.y_labels[self.current_index],
                      color=self.plot_settings["color"], linestyle=self.plot_settings["linestyle"],
                      linewidth=self.plot_settings["linewidth"], marker=self.plot_settings["marker"],
-                     markersize=self.plot_settings["markersize"],)
+                     markersize=self.plot_settings["markersize"],markerfacecolor=self.plot_settings["markercolor"],
+                     markeredgecolor=self.plot_settings["markercolor"])
         self.ax.set_ylabel(self.y_labels[self.current_index])
         self.ax.set_xlabel(self.x_label)
         self.ax.set_title(self.y_labels[self.current_index], picker=True)
@@ -157,23 +190,22 @@ class PlotApp:
         self.ax.grid(self.plot_settings["grid_y"], axis='y')
         self.ax.grid(self.plot_settings["grid_x"], axis='x')
         if self.plot_settings["log_x"] and np.any(self.x > 0):
-            self.x_min = min(self.x[self.x > 0])
-            self.x_max = max(self.x)
+            self.x_min = np.nanmin(self.x[self.x > 0])
+            self.x_max = np.nanmax(self.x)
             self.ax.set_xscale("log")
             self.ax.set_xlim(left=self.x_min / 1.1, right=self.x_max * 1.1)
         else:
-            self.x_min = min(self.x)
-            self.x_max = max(self.x)
+            self.x_min = np.nanmin(self.x)
+            self.x_max = np.nanmax(self.x)
             self.x_range = self.x_max - self.x_min
             x_buffer = 0.1 * self.x_range if self.x_range > 0 else 1
             self.ax.set_xlim(left=self.x_min, right=self.x_max)
             self.ax.set_xticks(np.linspace(self.x_min, self.x_max, 10))
 
-            # Y-Achse: Falls keine positiven Werte vorhanden sind, auf lineare Skalierung zurückfallen
         self.positive_y_values = self.y_values[:, self.current_index][self.y_values[:, self.current_index] > 0]
-        self.y_min = min(self.positive_y_values) if self.plot_settings["log_y"] and len(self.positive_y_values) > 0 else min(
+        self.y_min = np.nanmin(self.positive_y_values) if self.plot_settings["log_y"] and len(self.positive_y_values) > 0 else np.nanmin(
             self.y_values[:, self.current_index])
-        self.y_max = max(self.y_values[:, self.current_index])
+        self.y_max = np.nanmax(self.y_values[:, self.current_index])
         self.y_range = self.y_max - self.y_min
         self.y_buffer = 0.1 * self.y_range if self.y_range > 0 else 1
 
