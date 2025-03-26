@@ -1,23 +1,25 @@
-# compiler
+# Compiler
 FC  = gfortran
-#FPC = f2py
+# FPC = f2py
 FPC = python3 -m numpy.f2py
 
+# Include-Pfad für pets.h
+INCLUDE_PATH = /home/richy/Schreibtisch/post-processing/sci_gui/pets/petspy
 
-# compile flags
-#FCFLAGS = -cpp -fdefault-real-8 -fdefault-double-8 -ffree-line-length-0
-FCFLAGS  = -shared -fdefault-real-8 -fdefault-double-8 -ffree-line-length-0 -fPIC
-FPCFLAGS = -c --fcompiler=gnu95 --f90flags="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-0"
+# Compile flags
+FCFLAGS  = -shared -fdefault-real-8 -fdefault-double-8 -ffree-line-length-0 -fPIC -I$(INCLUDE_PATH)
+FPCFLAGS = -c --fcompiler=gnu95 --f90flags="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-0" -I$(INCLUDE_PATH)
 
-PYMODULE=petspy
-SOURCE  =pets.F90
-LIB     =libpets.so
+# Zielmodule
+PYMODULE = petspy
+SOURCE   = pets.F90
+LIB      = libpets.so
 
+# Ziel: petspy.so
 petspy.so: pywrappets.F90 
-	$(FC) $(FCFLAGS) -I. $(SOURCE) -o $(LIB)
-	$(FPC) $(FPCFLAGS) -L. -I. -lpets -m $(PYMODULE) $^
+	$(FC) $(FCFLAGS) -o $(LIB) $(SOURCE)
+	$(FPC) $(FPCFLAGS) -L$(INCLUDE_PATH) -I. -lpets -m $(PYMODULE) $^
 
-
-
+# Ziel: Clean
 clean: 
-		rm libpets.so petspy.so pets.mod 
+		rm -f libpets.so petspy.so pets.mod

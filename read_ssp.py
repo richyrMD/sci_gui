@@ -90,7 +90,7 @@ def export_to_path(metadata, data,metadata_file_path, data_file_path):
 
 def main():
 
-    export_path = "/home/richard/Schreibtisch/test"
+    export_path = "/home/richy/Schreibtisch"
 
     file_path = import_data()
 

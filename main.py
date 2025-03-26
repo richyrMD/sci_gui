@@ -176,20 +176,20 @@ class PlotApp:
         self.current_index = 0
 
         self.plot_settings = {
-            "color": "blue",
-            "linestyle": "-",
+            "color": "dimgray",
+            "linestyle": "-.",
             "linewidth": 1.5,
-            "marker": "",
-            "markersize": 5,
-            "markercolor": "blue",
+            "marker": "*",
+            "markersize": 1,
+            "markercolor": "royalblue",
             "log_x": False,
             "log_y": False,
-            "grid_x": False,
-            "grid_y": False,
+            "grid_x": True,
+            "grid_y": True,
             "base_col": 0
         }
         self.load_data()
-
+        self.get_if_position()
         self.init_plot()
 
     def load_data(self, reload=False):
@@ -202,6 +202,7 @@ class PlotApp:
 
             self.file_path = filedialog.askopenfilename(
                 filetypes=[("DAT files", "*.dat"), ("CSV files", "*.csv"), ("All files", "*.*")])
+            #self.file_path = "/home/richy/Schreibtisch/run03_noctua_Simon/20250323_192010_means.csv"
 
         file_extension = self.file_path.split('.')[-1].lower()
 
@@ -257,6 +258,13 @@ class PlotApp:
 
         plt.show()
 
+    def get_if_position(self):
+        
+        
+        self.rows_with_true = np.where(self.y_values[:,-2] == True)[0]
+        self.if_pos = self.x[self.rows_with_true]
+        
+        
     def plot_profile(self):
 
         self.ax.clear()
@@ -278,6 +286,9 @@ class PlotApp:
         self.ax.grid(self.plot_settings["grid_y"], axis='y')
 
         self.ax.grid(self.plot_settings["grid_x"], axis='x')
+
+        self.ax.axvline(x=0, linestyle="--", color="purple", linewidth=1)
+
 
         if self.plot_settings["log_x"] and np.any(self.x > 0):
 

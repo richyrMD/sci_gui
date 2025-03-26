@@ -18,7 +18,7 @@ def g_PeTS2ms2(g_pets, T, rho):
     Tcrit   = 1.086
     delta0 = (0.001/0.8)/rhocrit
     tau0   = Tcrit/0.8
-    ig1 = -2.5/tau0  # Originally in PeTS: -2.5/tau0
+    ig1 = 0#-2.5/tau0  # Originally in PeTS: -2.5/tau0
     ig2 = 1.5 - np.log(delta0) - 1.5*np.log(tau0)
     tau   = Tcrit/T
     delta = rho/rhocrit
@@ -43,7 +43,7 @@ def g_ms22PeTS(g_ms2, T, rho):
     Tcrit   = 1.086
     delta0 = (0.001/0.8)/rhocrit
     tau0   = Tcrit/0.8
-    ig1 = -2.5/tau0  # Originally in PeTS: -2.5/tau0
+    ig1 = 0#-2.5/tau0  # Originally in PeTS: -2.5/tau0
     ig2 = 1.5 - np.log(delta0) - 1.5*np.log(tau0)
     tau   = Tcrit/T
     delta = rho/rhocrit
@@ -55,10 +55,10 @@ def g_ms22PeTS(g_ms2, T, rho):
 
 if __name__ == "__main__":
     
-    value = -3.28166
+    value = 5.0523
     rho = 0.72
     T = 0.88
-    pets2ms2 = False
+    pets2ms2 = True
     if pets2ms2 == True:
         print(g_PeTS2ms2(value,T,rho))
     else:

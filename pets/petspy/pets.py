@@ -11,8 +11,8 @@ integer_x = 12     # density
 integer_y = 19     # temperature
 
 # choose the values for the input variables
-var_x = 0.5
-var_y = 2.0
+var_x = 0.72
+var_y = 0.88
 
 n_z = 7 # number of quantities to calculate
 integer_z=np.zeros((n_z,1))
